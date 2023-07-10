@@ -1,31 +1,14 @@
 #!/usr/bin/env python3
-
-
+"""Execute multiple coroutines at the same time with async"""
 from typing import List
-
-
-''' Take the code from wait_n and alter it into a new function task_wait_n.
-    The code is nearly identical to wait_n except task_wait_random is being
-    called.
-'''
+import asyncio
+task_wait_random = __import__('3-tasks').task_wait_random
 
 
 async def task_wait_n(n: int, max_delay: int) -> List[float]:
-    '''Runs an async function for n times and adds the results into a list'''
-    modified_random = __import__('3-tasks').task_wait_random
-
-    delay_list = []
-    i = 0
-
-    while i < n:
-        delay_list.append(await modified_random(max_delay))
-        i += 1
-
-    return sorted(delay_list)
-
-
-if __name__ == '__main__':
-    import asyncio
-
-    print(task_wait_n.__doc__)
-    print(asyncio.run(task_wait_n(3, 4)))
+    """Spawns wait_random n times with the specified max_delay
+        and returns the list of all the delays (float values)."""
+    futures = [task_wait_random(max_delay) for _ in range(n)]
+    futures = asyncio.as_completed(futures)
+    delays = [await future for future in futures]
+    return delays
